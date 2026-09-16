@@ -246,7 +246,9 @@ final class HotkeyService {
         // Let events through when HopTab's own windows are focused (e.g. settings)
         // so text fields, TextEditors, etc. work normally.
         // Skip this bypass when a switcher is actively being used.
-        if NSApp.isActive
+        // Require a key window: an LSUIElement app can stay active with no
+        // window after Settings closes, which would otherwise disable all hotkeys.
+        if NSApp.isActive && NSApp.keyWindow != nil
             && !isSwitcherActive && !isProfileSwitcherActive
             && !isWindowPickerActive && activeProfileHotkeyId == nil {
             return event
