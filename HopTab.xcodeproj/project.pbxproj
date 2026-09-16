@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		00282ECA2F7ACEEE0059AAA8 /* HopTabPro in Frameworks */ = {isa = PBXBuildFile; productRef = 00282EC92F7ACEEE0059AAA8 /* HopTabPro */; };
 		202A3B2F2717FE0BEA3F530B /* SnapShortcutConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A4E841454545134FAE3339 /* SnapShortcutConfig.swift */; };
 		64CA62C22A78968E80DA5393 /* ProServiceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7AE653D4E888BC4D838023 /* ProServiceRegistry.swift */; };
 		7A4AB6F5B66BCAAAC3D6D3B4 /* ProBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B17442F38E50AF2158BD34B /* ProBridge.swift */; };
@@ -88,7 +87,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				00282ECA2F7ACEEE0059AAA8 /* HopTabPro in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -233,7 +231,6 @@
 			);
 			mainGroup = D10000;
 			packageReferences = (
-				00282EC82F7ACEEE0059AAA8 /* XCLocalSwiftPackageReference "HopTabPro" */,
 			);
 			productRefGroup = D10099 /* Products */;
 			projectDirPath = "";
@@ -508,19 +505,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		00282EC82F7ACEEE0059AAA8 /* XCLocalSwiftPackageReference "HopTabPro" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = HopTabPro;
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		00282EC92F7ACEEE0059AAA8 /* HopTabPro */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = HopTabPro;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E10000 /* Project object */;
 }

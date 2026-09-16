@@ -40,6 +40,12 @@ protocol HopTabProProvider: AnyObject {
     /// End a running focus session because the user switched away from its profile. No-op if none.
     func endFocusSessionForProfileSwitch()
 
+    // Pomodoro (started from the Calendar event list)
+    /// nil when no Pomodoro is running.
+    var pomodoroStatus: ProPomodoroStatus? { get }
+    func stopPomodoro()
+    func skipPomodoroBreak()
+
     // v2 Pro per-feature views
     func windowUndoSectionView() -> AnyView?
     func focusDimmingSectionView() -> AnyView?
@@ -53,6 +59,23 @@ protocol HopTabProProvider: AnyObject {
     func displaysSectionView(profiles: [ProProfileInfo]) -> AnyView?
     func licenseSectionView() -> AnyView?
 
+}
+
+/// Defaults so providers that don't support Pomodoro yet still conform;
+/// the menu bar hides the Pomodoro controls while `pomodoroStatus` is nil.
+extension HopTabProProvider {
+    var pomodoroStatus: ProPomodoroStatus? { nil }
+    func stopPomodoro() {}
+    func skipPomodoroBreak() {}
+}
+
+/// Snapshot of a running Pomodoro, shown in the menu bar.
+struct ProPomodoroStatus {
+    let eventTitle: String
+    /// e.g. "Focus" or "Break".
+    let phaseLabel: String
+    let isBreak: Bool
+    let secondsRemaining: Int
 }
 
 // MARK: - Feature Service Protocols

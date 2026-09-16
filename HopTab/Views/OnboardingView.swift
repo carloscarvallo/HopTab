@@ -775,6 +775,24 @@ private struct LayoutsPage: View {
 
     private let zoneColors: [Color] = [.blue, .purple, .orange, .green]
 
+    // Split out with explicit types: inline, this expression exceeds the
+    // compiler's type-check time limit.
+    private func zoneRect(index: Int, zone: (Double, Double, Double, Double)) -> some View {
+        let color = zoneColors[index % zoneColors.count]
+        let width = CGFloat(260 * zone.2 - 4)
+        let height = CGFloat(140 * zone.3 - 4)
+        let x = CGFloat(260 * (zone.0 + zone.2 / 2))
+        let y = CGFloat(140 * (zone.1 + zone.3 / 2))
+        return RoundedRectangle(cornerRadius: 4)
+            .fill(color.opacity(0.15))
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(color.opacity(0.4), lineWidth: 1.5)
+            )
+            .frame(width: width, height: height)
+            .position(x: x, y: y)
+    }
+
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
@@ -798,20 +816,7 @@ private struct LayoutsPage: View {
                 ZStack {
                     let current = layouts[activeLayout]
                     ForEach(Array(current.1.enumerated()), id: \.offset) { idx, zone in
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(zoneColors[idx % zoneColors.count].opacity(0.15))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 4)
-                                    .stroke(zoneColors[idx % zoneColors.count].opacity(0.4), lineWidth: 1.5)
-                            )
-                            .frame(
-                                width: 260 * zone.2 - 4,
-                                height: 140 * zone.3 - 4
-                            )
-                            .position(
-                                x: 260 * (zone.0 + zone.2 / 2),
-                                y: 140 * (zone.1 + zone.3 / 2)
-                            )
+                        zoneRect(index: idx, zone: zone)
                     }
                 }
                 .frame(width: 260, height: 140)
