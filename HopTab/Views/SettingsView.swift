@@ -1024,6 +1024,13 @@ private struct ShortcutsSection: View {
 
             Toggle("Move recently switched app to front", isOn: $appState.recentAppFirst)
                 .font(.system(size: 12))
+
+            Toggle("Quit apps not in the new profile when switching profiles", isOn: $appState.quitAppsOnProfileSwitch)
+                .font(.system(size: 12))
+                .help("Apps pinned in the old profile but not in the new one are quit instead of hidden. Finder is always hidden.")
+
+            Toggle("Open the new profile's pinned apps when switching profiles", isOn: $appState.launchAppsOnProfileSwitch)
+                .font(.system(size: 12))
         }
     }
 

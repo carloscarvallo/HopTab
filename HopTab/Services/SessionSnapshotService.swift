@@ -159,6 +159,19 @@ enum SessionSnapshotService {
         }
     }
 
+    /// Quit outgoing profile's apps, skipping any shared with the incoming profile.
+    /// Apps that can't be quit (Finder) are hidden instead.
+    static func quitProfileApps(_ outgoing: Profile, excluding incoming: Profile) {
+        let incomingBundles = Set(incoming.pinnedApps.map(\.bundleIdentifier))
+        for app in outgoing.pinnedApps {
+            guard !incomingBundles.contains(app.bundleIdentifier),
+                  let running = app.runningApplication else { continue }
+            if app.bundleIdentifier == "com.apple.finder" || !running.terminate() {
+                running.hide()
+            }
+        }
+    }
+
     /// Unhide all running apps belonging to a profile.
     static func unhideProfileApps(_ profile: Profile) {
         for app in profile.pinnedApps {

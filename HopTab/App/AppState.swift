@@ -25,6 +25,18 @@ final class AppState: ObservableObject {
             UserDefaults.standard.set(recentAppFirst, forKey: "recentAppFirst")
         }
     }
+    /// On profile switch, quit (instead of hide) outgoing apps not pinned in the new profile.
+    @Published var quitAppsOnProfileSwitch: Bool = UserDefaults.standard.bool(forKey: "quitAppsOnProfileSwitch") {
+        didSet {
+            UserDefaults.standard.set(quitAppsOnProfileSwitch, forKey: "quitAppsOnProfileSwitch")
+        }
+    }
+    /// On profile switch, launch the new profile's pinned apps that aren't running.
+    @Published var launchAppsOnProfileSwitch: Bool = UserDefaults.standard.bool(forKey: "launchAppsOnProfileSwitch") {
+        didSet {
+            UserDefaults.standard.set(launchAppsOnProfileSwitch, forKey: "launchAppsOnProfileSwitch")
+        }
+    }
     @Published var dragSnapEnabled: Bool = UserDefaults.standard.object(forKey: "dragSnapEnabled") == nil ? false : UserDefaults.standard.bool(forKey: "dragSnapEnabled") {
         didSet {
             UserDefaults.standard.set(dragSnapEnabled, forKey: "dragSnapEnabled")
@@ -830,9 +842,13 @@ final class AppState: ObservableObject {
                 self.store.saveSnapshot(snapshot)
             }
 
-            // 3. Hide outgoing apps (except shared ones)
+            // 3. Hide (or quit) outgoing apps (except shared ones)
             if let outgoingId, let outgoing = self.store.profiles.first(where: { $0.id == outgoingId }) {
-                SessionSnapshotService.hideProfileApps(outgoing, excluding: incoming)
+                if self.quitAppsOnProfileSwitch {
+                    SessionSnapshotService.quitProfileApps(outgoing, excluding: incoming)
+                } else {
+                    SessionSnapshotService.hideProfileApps(outgoing, excluding: incoming)
+                }
             }
 
             // 4. Switch the active profile
@@ -846,8 +862,11 @@ final class AppState: ObservableObject {
             // 4c. A focus session is scoped to the outgoing profile — end it (Pro).
             ProServiceRegistry.shared.provider?.endFocusSessionForProfileSwitch()
 
-            // 5. Unhide incoming apps
+            // 5. Unhide incoming apps, and launch any that aren't running
             SessionSnapshotService.unhideProfileApps(incoming)
+            if self.launchAppsOnProfileSwitch {
+                SessionSnapshotService.launchProfileApps(incoming)
+            }
 
             // 6. Apply layout or restore window positions after a small delay (let unhide take effect)
             if let binding = incoming.layoutBinding,
