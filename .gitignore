@@ -41,4 +41,5 @@ HopTabPro/
 hoptab-license-worker/node_modules/
 HopTab.app/
 
-.wrangler/
+.wrangler/build-signed/
+build-signed/

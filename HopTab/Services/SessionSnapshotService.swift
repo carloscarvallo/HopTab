@@ -192,10 +192,37 @@ enum SessionSnapshotService {
     /// Launch all pinned apps in a profile that aren't already running.
     static func launchProfileApps(_ profile: Profile) {
         for app in profile.pinnedApps {
-            guard app.runningApplication == nil, let url = app.applicationURL else { continue }
-            let config = NSWorkspace.OpenConfiguration()
-            config.activates = false
-            NSWorkspace.shared.openApplication(at: url, configuration: config) { _, _ in }
+            launchAndVerify(app, attemptsLeft: launchAttempts)
+        }
+    }
+
+    private static let launchAttempts = 3
+    private static let launchVerifyDelay: TimeInterval = 4
+
+    /// Launch an app, then check it is still running and try again if not.
+    ///
+    /// Some apps exit right after launch instead of opening a window — VS Code
+    /// does this when HopTab starts it, quitting ~0.1s in after an Electron
+    /// code-signing check. A later attempt usually succeeds, so retry a few times
+    /// rather than leaving the profile without the app.
+    private static func launchAndVerify(_ app: PinnedApp, attemptsLeft: Int) {
+        guard app.runningApplication == nil, let url = app.applicationURL else { return }
+
+        let config = NSWorkspace.OpenConfiguration()
+        config.activates = false
+        NSWorkspace.shared.openApplication(at: url, configuration: config) { _, error in
+            if let error {
+                NSLog("[SessionSnapshotService] Launch of %@ failed: %@",
+                      app.bundleIdentifier, error.localizedDescription)
+            }
+        }
+
+        guard attemptsLeft > 1 else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + launchVerifyDelay) {
+            guard app.runningApplication == nil else { return }
+            NSLog("[SessionSnapshotService] %@ did not stay running — retrying (%d left)",
+                  app.bundleIdentifier, attemptsLeft - 1)
+            launchAndVerify(app, attemptsLeft: attemptsLeft - 1)
         }
     }
 
