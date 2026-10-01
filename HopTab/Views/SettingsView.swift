@@ -1031,6 +1031,10 @@ private struct ShortcutsSection: View {
 
             Toggle("Open the new profile's pinned apps when switching profiles", isOn: $appState.launchAppsOnProfileSwitch)
                 .font(.system(size: 12))
+
+            Toggle("Close unpinned apps when switching profiles", isOn: $appState.closeUnpinnedAppsOnProfileSwitch)
+                .font(.system(size: 12))
+                .help("Apps pinned in neither profile are quit. HopTab asks first, and you can pin apps to keep them. Finder is never quit.")
         }
     }
 

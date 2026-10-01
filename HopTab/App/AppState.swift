@@ -37,6 +37,12 @@ final class AppState: ObservableObject {
             UserDefaults.standard.set(launchAppsOnProfileSwitch, forKey: "launchAppsOnProfileSwitch")
         }
     }
+    /// On profile switch, quit apps pinned in neither profile, after asking which to pin instead.
+    @Published var closeUnpinnedAppsOnProfileSwitch: Bool = UserDefaults.standard.bool(forKey: "closeUnpinnedAppsOnProfileSwitch") {
+        didSet {
+            UserDefaults.standard.set(closeUnpinnedAppsOnProfileSwitch, forKey: "closeUnpinnedAppsOnProfileSwitch")
+        }
+    }
     @Published var dragSnapEnabled: Bool = UserDefaults.standard.object(forKey: "dragSnapEnabled") == nil ? false : UserDefaults.standard.bool(forKey: "dragSnapEnabled") {
         didSet {
             UserDefaults.standard.set(dragSnapEnabled, forKey: "dragSnapEnabled")
@@ -117,6 +123,10 @@ final class AppState: ObservableObject {
     /// so this flag suppresses re-entrant space-driven switches that would oscillate
     /// between space-bound profiles.
     private var isApplyingProfile: Bool = false
+    /// True while the "close unpinned apps" dialog is open. Its modal run loop
+    /// still drains the main queue, so queued switches and the switcher overlay
+    /// must not run during it.
+    private var isConfirmingAppClose: Bool = false
     private let spaceChangeSubject = PassthroughSubject<Void, Never>()
 
     init() {
@@ -307,7 +317,10 @@ final class AppState: ObservableObject {
             // switchToProfile applies its changes on the next main-queue turn;
             // enqueue the switcher behind it so the overlay shows the *new*
             // profile's apps rather than the outgoing one's.
-            DispatchQueue.main.async { self?.showSwitcher() }
+            DispatchQueue.main.async {
+                guard let self, !self.isConfirmingAppClose else { return }
+                self.showSwitcher()
+            }
         }
 
         hotkeyService.onProfileHotkeyCycleForward = { [weak self] _ in
@@ -815,6 +828,22 @@ final class AppState: ObservableObject {
     }
 
     /// Core profile switch: snapshot outgoing, hide, switch, unhide, restore incoming, show sticky note.
+    /// Shows the "close unpinned apps" dialog. Returns the apps to pin, or nil
+    /// if the user cancelled the switch.
+    private func askWhichUnpinnedAppsToPin(_ apps: [NSRunningApplication],
+                                           outgoing: Profile,
+                                           incoming: Profile) -> [NSRunningApplication]? {
+        let wasActive = NSApp.isActive
+        isConfirmingAppClose = true
+        defer { isConfirmingAppClose = false }
+
+        NSApp.activate(ignoringOtherApps: true)
+        let toPin = UnpinnedAppsAlert.run(apps: apps, outgoingName: outgoing.name, incomingName: incoming.name)
+        // Give focus back, so HopTab is not left active with no window.
+        if !wasActive { NSApp.hide(nil) }
+        return toPin
+    }
+
     private func switchToProfile(id: UUID) {
         let outgoingId = store.activeProfileId
         guard outgoingId != id else { return }
@@ -826,6 +855,27 @@ final class AppState: ObservableObject {
             // return after `isApplyingProfile = true` would leave the flag stuck
             // and silently disable space-driven auto-switching until relaunch.
             guard let incoming = self.store.profiles.first(where: { $0.id == id }) else { return }
+
+            // 0. Ask before quitting apps pinned in neither profile. Checked apps
+            // are pinned to the outgoing profile first, so step 1 snapshots them.
+            guard !self.isConfirmingAppClose else { return }
+            var unpinnedToQuit: [NSRunningApplication] = []
+            if self.closeUnpinnedAppsOnProfileSwitch,
+               let outgoingId, self.store.activeProfileId == outgoingId,
+               let outgoing = self.store.profiles.first(where: { $0.id == outgoingId }) {
+                let unpinned = SessionSnapshotService.unpinnedRunningApps(outgoing: outgoing, incoming: incoming)
+                if !unpinned.isEmpty {
+                    guard let toPin = self.askWhichUnpinnedAppsToPin(unpinned, outgoing: outgoing, incoming: incoming)
+                    else { return }
+                    for app in toPin {
+                        guard let bundleId = app.bundleIdentifier else { continue }
+                        self.store.add(PinnedApp(bundleIdentifier: bundleId,
+                                                 displayName: app.localizedName ?? bundleId,
+                                                 sortOrder: 0))
+                    }
+                    unpinnedToQuit = unpinned.filter { !toPin.contains($0) }
+                }
+            }
 
             // Cancel any pending layout/snapshot work from a previous rapid switch
             self.cancelPendingProfileWork()
@@ -850,6 +900,7 @@ final class AppState: ObservableObject {
                     SessionSnapshotService.hideProfileApps(outgoing, excluding: incoming)
                 }
             }
+            SessionSnapshotService.quitApps(unpinnedToQuit)
 
             // 4. Switch the active profile
             self.store.setActiveProfile(id: id)
