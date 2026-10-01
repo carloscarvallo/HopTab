@@ -23,6 +23,7 @@
 		A10010 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10010 /* OverlayView.swift */; };
 		A10011 /* AppIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10011 /* AppIconView.swift */; };
 		A10012 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10012 /* SettingsView.swift */; };
+		A10100 /* UnpinnedAppsAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10100 /* UnpinnedAppsAlert.swift */; };
 		A10013 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10013 /* MenuBarView.swift */; };
 		A10015 /* ShortcutConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10015 /* ShortcutConfig.swift */; };
 		A10016 /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10016 /* Profile.swift */; };
@@ -59,6 +60,7 @@
 		B10010 /* OverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
 		B10011 /* AppIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconView.swift; sourceTree = "<group>"; };
 		B10012 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B10100 /* UnpinnedAppsAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnpinnedAppsAlert.swift; sourceTree = "<group>"; };
 		B10013 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		B10014 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B10015 /* ShortcutConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutConfig.swift; sourceTree = "<group>"; };
@@ -164,6 +166,7 @@
 				B10011 /* AppIconView.swift */,
 				B10095 /* Theme.swift */,
 				B10012 /* SettingsView.swift */,
+				B10100 /* UnpinnedAppsAlert.swift */,
 				B10013 /* MenuBarView.swift */,
 				B10019 /* ShortcutRecorderView.swift */,
 				B10024 /* OnboardingView.swift */,
@@ -270,6 +273,7 @@
 				A10011 /* AppIconView.swift in Sources */,
 				A10095 /* Theme.swift in Sources */,
 				A10012 /* SettingsView.swift in Sources */,
+				A10100 /* UnpinnedAppsAlert.swift in Sources */,
 				A10013 /* MenuBarView.swift in Sources */,
 				A10015 /* ShortcutConfig.swift in Sources */,
 				A10016 /* Profile.swift in Sources */,
