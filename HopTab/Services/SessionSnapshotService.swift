@@ -166,9 +166,29 @@ enum SessionSnapshotService {
         for app in outgoing.pinnedApps {
             guard !incomingBundles.contains(app.bundleIdentifier),
                   let running = app.runningApplication else { continue }
-            if app.bundleIdentifier == "com.apple.finder" || !running.terminate() {
-                running.hide()
-            }
+            quitOrHide(running)
+        }
+    }
+
+    /// Running Dock apps pinned in neither profile. Finder and HopTab are left out.
+    static func unpinnedRunningApps(outgoing: Profile, incoming: Profile) -> [NSRunningApplication] {
+        let pinned = Set((outgoing.pinnedApps + incoming.pinnedApps).map(\.bundleIdentifier))
+        let excluded: Set<String> = ["com.apple.finder", Bundle.main.bundleIdentifier ?? ""]
+        return NSWorkspace.shared.runningApplications.filter { running in
+            guard running.activationPolicy == .regular, !running.isTerminated,
+                  let bundleId = running.bundleIdentifier else { return false }
+            return !pinned.contains(bundleId) && !excluded.contains(bundleId)
+        }
+    }
+
+    /// Quit apps (they can still ask to save documents). Apps that refuse are hidden.
+    static func quitApps(_ apps: [NSRunningApplication]) {
+        apps.forEach(quitOrHide)
+    }
+
+    private static func quitOrHide(_ running: NSRunningApplication) {
+        if running.bundleIdentifier == "com.apple.finder" || !running.terminate() {
+            running.hide()
         }
     }
 
